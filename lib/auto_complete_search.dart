@@ -310,7 +310,7 @@ class AutoCompleteSearchFieldState<T> extends State<AutoCompleteSearchField> {
                             constraints: new BoxConstraints(
                               minHeight: 10,
                               maxHeight:
-                                  MediaQuery.of(context).size.height * 0.4,
+                                  MediaQuery.of(context).size.height * 0.3,
                             ),
                             child: new SingleChildScrollView(
                                 child: new Column(children: <Widget>[
