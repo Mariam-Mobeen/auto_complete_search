@@ -1,8 +1,8 @@
 name: auto_complete_search
 description: A new Flutter package project.
 version: 0.0.1
-author:
-homepage:
+author: Mariam Mobeen <mariam@brandver.se>
+homepage: http://gtihub.com
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
