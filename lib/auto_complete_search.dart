@@ -128,7 +128,6 @@ class AutoCompleteSearchFieldState<T> extends State<AutoCompleteSearchField> {
   bool submitOnSuggestionTap, clearOnSubmit;
   TextEditingController controller;
   FocusNode focusNode;
-  ScrollController _controller = new ScrollController();
 
   String currentText = "";
 
