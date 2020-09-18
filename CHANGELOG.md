@@ -1,3 +1,3 @@
-## [0.0.1] - 2020-09-17
+## [0.0.2] - 2020-09-18
 
 - Auto complete text field with scrollable suggestions
