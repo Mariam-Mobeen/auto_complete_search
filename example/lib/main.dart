@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Auto Complete Search Demo',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page', areaList: areaList),
+      home: MyHomePage(title: 'Auto Complete Search Demo', areaList: areaList),
     );
   }
 }
@@ -138,7 +138,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   padding: const EdgeInsets.all(4.0)),
               itemFilter: (suggestion, input) =>
-                  suggestion.name.toLowerCase().startsWith(input.toLowerCase()),
+                 suggestion.name
+                    .toLowerCase()
+                    .contains(input.toLowerCase()),
               clearOnSubmit: false,
             ),
           ],
