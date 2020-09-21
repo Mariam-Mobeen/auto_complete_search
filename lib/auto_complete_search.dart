@@ -307,7 +307,7 @@ class AutoCompleteSearchFieldState<T> extends State<AutoCompleteSearchField> {
                     child: new Card(
                         child: new ConstrainedBox(
                             constraints: new BoxConstraints(
-                              minHeight: 10,
+                              minHeight: 0,
                               maxHeight:
                                   MediaQuery.of(context).size.height * 0.3,
                             ),
