@@ -357,8 +357,6 @@ class AutoCompleteSearchFieldState<T> extends State<AutoCompleteSearchField> {
                         (filteredSuggestionsWidgets.length < 5
                             ? filteredSuggestionsWidgets.length
                             : 5));
-        print("Widgets lengyh");
-        print(filteredSuggestionsWidgets.length);
 
         return new Positioned(
             width: width,

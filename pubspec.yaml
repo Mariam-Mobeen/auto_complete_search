@@ -1,6 +1,6 @@
 name: auto_complete_search
 description: A simple and versatile autocomplete text field for flutter. An autocomplete textfield for flutter. Really simple and easy to use with scrollable suggestions. You can customise what happens when item is selected and how filtering is done. Hint text and borders of the widget are also customizable.
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/Mariam-Mobeen
 repository: https://github.com/Mariam-Mobeen/auto_complete_search.git
 
