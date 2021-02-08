@@ -12,6 +12,8 @@ typedef InputEventCallback<T>(T data);
 
 typedef StringCallback(String data);
 
+enum SuggestionsDirection { down, up }
+
 class AutoCompleteSearchField<T> extends StatefulWidget {
   final List<T> suggestions;
   final Filter<T> itemFilter;
@@ -32,6 +34,8 @@ class AutoCompleteSearchField<T> extends StatefulWidget {
   final TextCapitalization textCapitalization;
   final TextEditingController controller;
   final FocusNode focusNode;
+  final SuggestionsDirection suggestionsDirection;
+  final num suggestionWidgetSize;
 
   AutoCompleteSearchField(
       {@required
@@ -53,6 +57,10 @@ class AutoCompleteSearchField<T> extends StatefulWidget {
       this.textSubmitted, //Callback on input text submitted, this is also a string
       this.onFocusChanged,
       this.keyboardType: TextInputType.text,
+      this.suggestionsDirection: SuggestionsDirection
+          .down, //What direction to show suggestions in? If your textfield is at the bottom of the page use SuggestionsDirection.up .
+      this.suggestionWidgetSize:
+          -1, //The amount of suggestions to show, larger values may result in them going off screen
       this.submitOnSuggestionTap:
           true, //Call textSubmitted on suggestion tap, itemSubmitted will be called no matter what
       this.clearOnSubmit: true, //Clear autoCompleteTextfield on submit
@@ -98,6 +106,8 @@ class AutoCompleteSearchField<T> extends StatefulWidget {
       itemBuilder,
       itemSorter,
       itemFilter,
+      suggestionsDirection,
+      suggestionWidgetSize,
       submitOnSuggestionTap,
       clearOnSubmit,
       minLength,
@@ -124,6 +134,8 @@ class AutoCompleteSearchFieldState<T> extends State<AutoCompleteSearchField> {
   OverlayEntry listSuggestionsEntry;
   List<T> filteredSuggestions;
   Filter<T> itemFilter;
+  SuggestionsDirection suggestionsDirection;
+  num suggestionWidgetHeight;
   int minLength;
   bool submitOnSuggestionTap, clearOnSubmit;
   TextEditingController controller;
@@ -147,6 +159,8 @@ class AutoCompleteSearchFieldState<T> extends State<AutoCompleteSearchField> {
       this.itemBuilder,
       this.itemSorter,
       this.itemFilter,
+      this.suggestionsDirection,
+      this.suggestionWidgetHeight,
       this.submitOnSuggestionTap,
       this.clearOnSubmit,
       this.minLength,
@@ -158,6 +172,11 @@ class AutoCompleteSearchFieldState<T> extends State<AutoCompleteSearchField> {
       this.textInputAction,
       this.controller,
       this.focusNode) {
+    if (suggestionsDirection == SuggestionsDirection.up &&
+        suggestionWidgetHeight == -1) {
+      throw "Suggestion widget size must be defined for non-standard suggestion direction!";
+    }
+
     textField = new TextField(
       inputFormatters: inputFormatters,
       textCapitalization: textCapitalization,
@@ -199,6 +218,7 @@ class AutoCompleteSearchFieldState<T> extends State<AutoCompleteSearchField> {
       }
     });
   }
+
   void updateDecoration(
       InputDecoration decoration,
       List<TextInputFormatter> inputFormatters,
@@ -295,13 +315,57 @@ class AutoCompleteSearchFieldState<T> extends State<AutoCompleteSearchField> {
       final Size textFieldSize = (context.findRenderObject() as RenderBox).size;
       final width = textFieldSize.width;
       final height = textFieldSize.height;
+
       listSuggestionsEntry = new OverlayEntry(builder: (context) {
+        List<Widget> filteredSuggestionsWidgets =
+            filteredSuggestions.map((suggestion) {
+          return new Row(children: [
+            new Expanded(
+                child: new InkWell(
+                    child: suggestionsDirection == SuggestionsDirection.up
+                        ? SizedBox(
+                            child: itemBuilder(context, suggestion),
+                            height: suggestionWidgetHeight,
+                          )
+                        : itemBuilder(context, suggestion),
+                    onTap: () {
+                      setState(() {
+                        if (submitOnSuggestionTap) {
+                          String newText = suggestion.toString();
+                          textField.controller.text = newText;
+                          textField.focusNode.unfocus();
+                          itemSubmitted(suggestion);
+                          if (clearOnSubmit) {
+                            clear();
+                          }
+                        } else {
+                          String newText = suggestion.toString();
+                          textField.controller.text = newText;
+                          textChanged(newText);
+                        }
+                      });
+                    }))
+          ]);
+        }).toList();
+
+        final suggestionsOffsetHeight =
+            suggestionsDirection == SuggestionsDirection.down
+                ? height
+                : -(height -
+                    35.0 +
+                    suggestionWidgetHeight *
+                        (filteredSuggestionsWidgets.length < 5
+                            ? filteredSuggestionsWidgets.length
+                            : 5));
+        print("Widgets lengyh");
+        print(filteredSuggestionsWidgets.length);
+
         return new Positioned(
             width: width,
             child: CompositedTransformFollower(
                 link: _layerLink,
                 showWhenUnlinked: false,
-                offset: Offset(0.0, height),
+                offset: Offset(0.0, suggestionsOffsetHeight),
                 child: new SizedBox(
                     width: width,
                     child: new Card(
@@ -312,37 +376,9 @@ class AutoCompleteSearchFieldState<T> extends State<AutoCompleteSearchField> {
                                   MediaQuery.of(context).size.height * 0.3,
                             ),
                             child: new SingleChildScrollView(
-                                child: new Column(children: <Widget>[
-                              ...filteredSuggestions.map((suggestion) {
-                                return new Row(children: [
-                                  new Expanded(
-                                      child: new InkWell(
-                                          child:
-                                              itemBuilder(context, suggestion),
-                                          onTap: () {
-                                            setState(() {
-                                              if (submitOnSuggestionTap) {
-                                                String newText =
-                                                    suggestion.toString();
-                                                textField.controller.text =
-                                                    newText;
-                                                textField.focusNode.unfocus();
-                                                itemSubmitted(suggestion);
-                                                if (clearOnSubmit) {
-                                                  clear();
-                                                }
-                                              } else {
-                                                String newText =
-                                                    suggestion.toString();
-                                                textField.controller.text =
-                                                    newText;
-                                                textChanged(newText);
-                                              }
-                                            });
-                                          }))
-                                ]);
-                              }).toList(),
-                            ])))))));
+                                child: new Column(
+                              children: filteredSuggestionsWidgets,
+                            )))))));
       });
       Overlay.of(context).insert(listSuggestionsEntry);
     }
@@ -434,6 +470,8 @@ class SimpleAutoCompleteTextField extends AutoCompleteSearchField<String> {
       }, (item, query) {
         return item.toLowerCase().startsWith(query.toLowerCase());
       },
+          SuggestionsDirection.down,
+          -1, //Suggestions go in default direction so size doesnt need to be specified.
           submitOnSuggestionTap,
           clearOnSubmit,
           minLength,
